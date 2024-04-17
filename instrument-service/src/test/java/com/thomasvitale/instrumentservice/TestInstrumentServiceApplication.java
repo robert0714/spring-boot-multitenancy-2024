@@ -14,7 +14,7 @@ public class TestInstrumentServiceApplication {
     @RestartScope
     @ServiceConnection
     PostgreSQLContainer<?> postgreSQLContainer() {
-        return new PostgreSQLContainer<>("postgres:15.5");
+        return new PostgreSQLContainer<>("postgres:15.6");
     }
 
     public static void main(String[] args) {

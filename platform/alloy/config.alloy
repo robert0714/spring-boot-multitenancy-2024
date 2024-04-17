@@ -1,5 +1,5 @@
 /********************************************
- * Agent
+ * Alloy
  ********************************************/
 
 logging {
@@ -16,7 +16,7 @@ tracing {
  * Metrics
  ********************************************/
 
-prometheus.exporter.agent "default" {}
+prometheus.exporter.self "default" {}
 
 prometheus.exporter.postgres "default" {
   data_source_names = [
@@ -26,7 +26,7 @@ prometheus.exporter.postgres "default" {
 
 prometheus.scrape "exporters" {
   targets = concat(
-    prometheus.exporter.agent.default.targets,
+    prometheus.exporter.self.default.targets,
     prometheus.exporter.postgres.default.targets,
   )
 
@@ -39,27 +39,27 @@ prometheus.scrape "exporters" {
 
 prometheus.scrape "services" {
   targets = [
-    {
-      __address__       = "host.docker.internal:80",
-      __metrics_path__  = "/actuator/prometheus",
-      job               = "services/spring-boot",
-    },
-    {
-      __address__       = "host.docker.internal:8181",
-      __metrics_path__  = "/actuator/prometheus",
-      job               = "services/spring-boot",
-    },
-    {
-      __address__       = "host.docker.internal:8282",
-      __metrics_path__  = "/actuator/prometheus",
-      job               = "services/spring-boot",
-    },
-    {
-      __address__       = "host.docker.internal:8080",
-      __metrics_path__  = "/metrics",
-      job               = "services/quarkus",
-      application       = "keycloak",
-    },
+      {
+        __address__       = "host.docker.internal:80",
+        __metrics_path__  = "/actuator/prometheus",
+        job               = "services/spring-boot",
+      },
+      {
+        __address__       = "host.docker.internal:8181",
+        __metrics_path__  = "/actuator/prometheus",
+        job               = "services/spring-boot",
+      },
+      {
+        __address__       = "host.docker.internal:8282",
+        __metrics_path__  = "/actuator/prometheus",
+        job               = "services/spring-boot",
+      },
+      {
+        __address__       = "host.docker.internal:8080",
+        __metrics_path__  = "/metrics",
+        job               = "services/quarkus",
+        application       = "keycloak",
+      },
   ]
 
   job_name        = "services"
@@ -102,11 +102,11 @@ discovery.relabel "containers" {
   }
 
   rule {
-      action        = "replace"
-      source_labels = ["__meta_docker_container_label_org_opencontainers_image_version"]
-      regex         = "/(.*)"
-      target_label  = "version"
-    }
+    action        = "replace"
+    source_labels = ["__meta_docker_container_label_org_opencontainers_image_version"]
+    regex         = "/(.*)"
+    target_label  = "version"
+  }
 }
 
 loki.source.docker "services" {
@@ -116,10 +116,10 @@ loki.source.docker "services" {
 }
 
 loki.write "default" {
-	endpoint {
-		url = env("LOKI_URL")
-	}
-	external_labels = {
+  endpoint {
+	url = env("LOKI_URL")
+  }
+  external_labels = {
     environment = env("ENVIRONMENT"),
     hostname    = env("HOSTNAME"),
   }
