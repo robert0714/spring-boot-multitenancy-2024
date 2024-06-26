@@ -50,12 +50,18 @@ multitenancy:
     - identifier: dukes
       enabled: true
       schema: DUKES
+      client-id: edge-service
+      client-secret: rocking-secret
       issuer: http://localhost:8080/realms/dukes
     - identifier: beans
       enabled: true
       schema: BEANS
+      client-id: edge-service
+      client-secret: rocking-secret
       issuer: http://localhost:8080/realms/beans
     - identifier: trixie
       enabled: false
       schema: TRIXIE
+      client-id: edge-service
+      client-secret: rocking-secret
       issuer: http://localhost:8080/realms/trixie
