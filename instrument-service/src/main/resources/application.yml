@@ -7,7 +7,9 @@ spring:
   flyway:
     locations: classpath:db/migration/default
     schemas: default
-
+  websecurity:
+    debug: true
+    
 logging:
   pattern:
     correlation: '[%X{traceId:-}-%X{spanId:-}] [%X{tenantId:-}] '
