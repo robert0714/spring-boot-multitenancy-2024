@@ -11,6 +11,10 @@ spring:
 logging:
   pattern:
     correlation: '[%X{traceId:-}-%X{spanId:-}] [%X{tenantId:-}] '
+  level:
+    org:
+      springframework:
+        security: DEBUG  
 
 management:
   endpoints:
