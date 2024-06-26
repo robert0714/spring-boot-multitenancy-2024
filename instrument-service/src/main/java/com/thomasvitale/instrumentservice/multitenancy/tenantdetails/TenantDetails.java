@@ -7,5 +7,7 @@ public record TenantDetails(
         String identifier,
         boolean enabled,
         String schema,
-        String issuer
+        String issuer,
+        String clientId ,
+        String clientSecret
 ) {}

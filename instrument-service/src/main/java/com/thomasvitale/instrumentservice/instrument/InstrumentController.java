@@ -12,20 +12,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.thomasvitale.instrumentservice.multitenancy.security.JWTInfoHelper;
+
 @RestController
 @RequestMapping("instruments")
 public class InstrumentController {
 
 	private static final Logger log = LoggerFactory.getLogger(InstrumentController.class);
 	private final InstrumentRepository instrumentRepository;
+	private final JWTInfoHelper helper ;
 
-	InstrumentController(InstrumentRepository instrumentRepository) {
+	InstrumentController(InstrumentRepository instrumentRepository , JWTInfoHelper helper) {
     	this.instrumentRepository = instrumentRepository;
+    	this. helper= helper ;
 	}
 
   	@GetMapping
   	List<Instrument> getInstruments() {
     	log.info("Returning all instruments");
+		log.info("Realm: {} ,User: {}", this.helper.showRealmName(), this.helper.showUserName());
     	return instrumentRepository.findAll();
   	}
 
@@ -33,12 +38,14 @@ public class InstrumentController {
 	@Cacheable(cacheNames = "instrumentTypes", keyGenerator = "tenantKeyGenerator")
 	List<Instrument> getInstrumentByType(@PathVariable String type) {
     	log.info("Returning instrument of type: {}", type);
+    	log.info("Realm: {} ,User: {}", this.helper.showRealmName(), this.helper.showUserName());
     	return instrumentRepository.findByType(type);
 	}
 
 	@PostMapping
 	Instrument addInstrument(@RequestBody Instrument instrument) {
     	log.info("Adding instrument: {}", instrument.getName());
+    	log.info("Realm: {} ,User: {}", this.helper.showRealmName(), this.helper.showUserName());
     	return instrumentRepository.save(instrument);
 	}
 
