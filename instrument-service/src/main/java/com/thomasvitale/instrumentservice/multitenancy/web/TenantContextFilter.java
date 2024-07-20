@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 import com.thomasvitale.instrumentservice.multitenancy.context.TenantContextHolder;
 import com.thomasvitale.instrumentservice.multitenancy.context.resolvers.HttpHeaderTenantResolver;
@@ -24,15 +25,12 @@ import org.springframework.web.filter.ServerHttpObservationFilter;
  * Establish a tenant context from an HTTP request, if tenant information is available.
  */
 @Component
+@RequiredArgsConstructor
 public class TenantContextFilter extends OncePerRequestFilter {
 
 	private final HttpHeaderTenantResolver httpRequestTenantResolver;
     private final TenantDetailsService tenantDetailsService;
 
-	public TenantContextFilter(HttpHeaderTenantResolver httpHeaderTenantResolver, TenantDetailsService tenantDetailsService) {
-		this.httpRequestTenantResolver = httpHeaderTenantResolver;
-        this.tenantDetailsService = tenantDetailsService;
-    }
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -55,7 +53,8 @@ public class TenantContextFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().startsWith("/actuator");
+    	String uri = request.getRequestURI();    	
+        return org.apache.commons.lang3.StringUtils.startsWithAny(uri, "/actuator","/swagger-ui","/v3/api-docs");
     }
 
     private boolean isTenantValid(String tenantIdentifier) {
