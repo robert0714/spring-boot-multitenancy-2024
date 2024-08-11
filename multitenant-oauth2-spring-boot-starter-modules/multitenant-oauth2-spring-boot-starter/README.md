@@ -69,15 +69,15 @@ All configuration properties start with the prefix
        * The backend CORS is open to a maximum range of (`*`).
        * Whether the backend is started locally or remotely at 192.168.x.x will not affect front-end <font color="red">tenantless</font> development.
          * The backend starts on local laptop
-           :::mermaid
+           ```mermaid
            flowchart LR       
                 subgraph developer's laptop 
                 direction LR   
                 c1("SPA")-- "call url-> localhost or window.loaction" -->a2("backend") 
            end     
-           :::
+           ```
          * Backend started at 192.168.x.x
-           :::mermaid
+           ```mermaid
            flowchart LR       
              subgraph vm 192.168.x.x
                 a1("gateway")-- "call url-> localhost" -->a2("backend")
@@ -85,7 +85,7 @@ All configuration properties start with the prefix
              subgraph developer's laptop 
                c1("SPA")-- "call url-> 192.168.x.x " -->a1
              end
-           :::
+           ```
        * And let the multi-tenant tenantId be converted to:
          *  Front-end execution: Can the back-end smoothly know who the tenant is?
          *  Gateway execution: HOST always receives `192.168.x.x`, <font color="red">cannot determine the tenant</font>.
@@ -95,16 +95,16 @@ All configuration properties start with the prefix
        * Whether the backend is started locally or remotely at 192.168.62.37 will not affect front-end <font color="red">tenantless</font> development.
        * Use devserver-proxy: https://cli.vuejs.org/config/#devserver-proxy
          * The backend starts on local laptop
-           :::mermaid
+           ```mermaid
            flowchart LR    
              subgraph developer's laptop 
                direction LR   
                c1("SPA")-- "call url-> localhost" -->devserver-proxy 
                devserver-proxy-- "call url-> localhost" -->a2("backend")
              end
-           :::
+           ```
          * Backend started at 192.168.x.x
-           :::mermaid
+           ```mermaid
            flowchart LR       
              subgraph vm 192.168.x.x
                 a1("gateway")-- "call url-> localhost" -->a2("backend")
@@ -114,7 +114,7 @@ All configuration properties start with the prefix
                c1("SPA")-- "call url-> localhost" -->devserver-proxy
                devserver-proxy-- "call url-> 192.168.x.x" -->a1
              end
-           :::
+           ```
        * And let the multi-tenant tenantId be converted to:
          *  Front-end execution: Can the back-end smoothly know who the tenant is?
          *  Gateway execution: devserver-proxy makes HOST receive always `192.168.x.x` or `localhost`, <font color="red">cannot determine the tenant</font>.
