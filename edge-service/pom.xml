@@ -8,7 +8,7 @@
 	<name>edge-service</name>
 	<description>Demo project for Edge Service</description>
 	<properties>
-		<spring-boot.version>3.2.7</spring-boot.version>
+		<spring-boot.version>3.2.8</spring-boot.version>
 		<spring-cloud.version>2023.0.2</spring-cloud.version>
 		<java.version>17</java.version>
 		<maven.compiler.source>17</maven.compiler.source>
