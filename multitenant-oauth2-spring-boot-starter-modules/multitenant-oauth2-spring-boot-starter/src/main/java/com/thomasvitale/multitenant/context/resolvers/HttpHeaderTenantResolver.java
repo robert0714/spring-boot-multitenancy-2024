@@ -31,8 +31,9 @@ public class HttpHeaderTenantResolver implements TenantResolver<HttpServletReque
 	public String resolveTenantIdentifier(HttpServletRequest request) {
 		String tenantHeader = props.getHeader().getHeaderName();
 		String tenantIdFromHeader = request.getHeader(tenantHeader);
-		return tenantIdFromHeader ;
-//		return Optional.ofNullable(tenantIdFromHeader).ofNullable(tenantIdFromHost()).orElse(null);		 
+		return Optional.ofNullable( tenantIdFromHeader)
+				      .orElse(Optional.ofNullable(tenantIdFromHost())
+				    		  .orElse(null));
 	}
 	protected String tenantIdFromHost(){
 		UriComponents uriComponents = ServletUriComponentsBuilder.fromCurrentRequest().build();

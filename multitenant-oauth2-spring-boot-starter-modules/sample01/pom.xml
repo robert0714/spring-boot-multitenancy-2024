@@ -11,7 +11,7 @@
 	<groupId>com.thomasvitale</groupId>
 	<artifactId>sample01</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Spring Boot multi-tenant sample app using the starter library from iisigroup</name> 
+	<name>Spring Boot multi-tenant sample app using the starter library from thomasvitale</name> 
 	 
 	<properties>
 		<java.version>17</java.version>

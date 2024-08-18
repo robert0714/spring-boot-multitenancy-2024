@@ -10,7 +10,7 @@ Add the dependency to your pom.xml file:
 
 ```xml
 <dependency>
-    <groupId>com.iisigroup</groupId>
+    <groupId>com.thomasvitale</groupId>
     <artifactId>multitenant-oauth2-spring-boot-starter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 </dependency>
