@@ -1,16 +1,12 @@
 package com.thomasvitale.edgeservice.multitenancy.gateway;
 
-import io.micrometer.common.KeyValue;
-
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractNameValueGatewayFilterFactory;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.reactive.ServerHttpObservationFilter;
 import org.springframework.web.server.ServerWebExchange;
-
 import reactor.core.publisher.Mono;
 
 import static org.springframework.cloud.gateway.support.GatewayToStringStyler.filterToStringCreator;
@@ -29,7 +25,6 @@ public class TenantGatewayFilterFactory extends AbstractNameValueGatewayFilterFa
 			public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 				String tenantId = ServerWebExchangeUtils.expand(exchange, config.getValue());
 				ServerHttpRequest request = addTenantToRequest(exchange, tenantId, config);
-				addTenantToObservation(tenantId, exchange);
 				return chain.filter(exchange.mutate().request(request).build());
 			}
 
@@ -46,11 +41,6 @@ public class TenantGatewayFilterFactory extends AbstractNameValueGatewayFilterFa
 		return exchange.getRequest().mutate()
 			.headers(httpHeaders -> httpHeaders.add(tenantHeader, tenantId))
 			.build();
-	}
-
-	private void addTenantToObservation(String tenantId, ServerWebExchange exchange) {
-		ServerHttpObservationFilter.findObservationContext(exchange).ifPresent(context ->
-			context.addHighCardinalityKeyValue(KeyValue.of("tenant.id", tenantId)));
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.thomasvitale.instrumentservice.demo;
 
+import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.List;
 
 import com.thomasvitale.instrumentservice.instrument.Instrument;
@@ -22,19 +24,61 @@ public class DataConfig {
 	@EventListener(ApplicationReadyEvent.class)
 	public void loadTestData() {
 		TenantContextHolder.setTenantIdentifier("dukes");
-		if (instrumentRepository.count() == 0) {
-			var piano = new Instrument("Steinway", "piano");
-			var cello = new Instrument("Cello", "string");
-			var guitar = new Instrument("Gibson Firebird", "guitar");
+		if (instrumentRepository.count() == 0) {			
+			var piano = Instrument.builder()
+		                    .name("Steinway")
+		                    .type("piano")
+		                    .createdAt(OffsetDateTime.now())
+		                    .updatedAt(OffsetDateTime.now())
+		                    .createdBy("default")
+					        .updatedBy("default")
+					      .build();
+			var cello = Instrument.builder()
+				            .name("Cello")
+                            .type("string")
+		                    .createdAt(OffsetDateTime.now())
+		                    .updatedAt(OffsetDateTime.now())
+		                    .createdBy("default")
+					        .updatedBy("default")
+					      .build();  
+			var guitar = Instrument.builder()
+		                    .name("Gibson Firebird")
+                            .type("guitar")
+                            .createdAt(OffsetDateTime.now())
+                            .updatedAt(OffsetDateTime.now())
+                            .createdBy("default")
+			                .updatedBy("default")
+			              .build();  
 			instrumentRepository.saveAll(List.of(piano, cello, guitar));
 		}
 		TenantContextHolder.clear();
 
 		TenantContextHolder.setTenantIdentifier("beans");
-		if (instrumentRepository.count() == 0) {
-			var organ = new Instrument("Hammond B3", "organ");
-			var viola = new Instrument("Viola", "string");
-			var guitarFake = new Instrument("Gibson Firebird (Fake)", "guitar");
+		if (instrumentRepository.count() == 0) { 			  
+			var organ = Instrument.builder()
+                    .name("Hammond B3")
+                    .type("organ")
+                    .createdAt(OffsetDateTime.now())
+                    .updatedAt(OffsetDateTime.now())
+                    .createdBy("default")
+			        .updatedBy("default")
+			      .build();
+	        var viola = Instrument.builder()
+		            .name("Viola")
+                    .type("string")
+                    .createdAt(OffsetDateTime.now())
+                    .updatedAt(OffsetDateTime.now())
+                    .createdBy("default")
+			        .updatedBy("default")
+			      .build();  
+	        var guitarFake = Instrument.builder()
+                    .name("Gibson Firebird (Fake)")
+                    .type("guitar")
+                    .createdAt(OffsetDateTime.now())
+                    .updatedAt(OffsetDateTime.now())
+                    .createdBy("default")
+	                .updatedBy("default")
+	              .build(); 
 			instrumentRepository.saveAll(List.of(organ, viola, guitarFake));
 		}
 		TenantContextHolder.clear();

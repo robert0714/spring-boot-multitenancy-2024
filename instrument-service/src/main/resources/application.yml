@@ -2,13 +2,20 @@ server:
   port: 8181
 
 spring:
+  main:
+    lazy-initialization: false
   application:
     name: instrument-service
   flyway:
     locations: classpath:db/migration/default
+    
     schemas: default
   websecurity:
-    debug: true
+    debug: false 
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/multitenant
+#    username: user
+#    password: pw 
     
 logging:
   pattern:
@@ -23,6 +30,9 @@ management:
     web:
       exposure:
         include: "*"
+    health:
+      show:
+        details: always      
   metrics:
     tags:
       application: ${spring.application.name}
@@ -34,9 +44,9 @@ management:
     resource-attributes:
       application: ${spring.application.name}
       "service.name": ${spring.application.name}
-  otlp:
-    tracing:
-      endpoint: http://localhost:4318/v1/traces
+  # otlp:
+  #   tracing:
+  #     endpoint: http://localhost:4318/v1/traces
   tracing:
     sampling:
       probability: 1.0
@@ -50,7 +60,28 @@ management:
         enabled: true
       show-details: always
       show-components: always
-
+springdoc:
+  api-docs:
+    enabled: true
+#    path: /api-docs
+  swagger-ui:
+    enabled: true
+#    path: /docs
+    use-root-path: true
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operationsSorter: method
+    tagsSorter: alpha
+    oauth:
+      clientId: edge-service
+      clientSecret: rocking-secret
+      use-basic-authentication-with-access-code-grant: true
+  cache:
+    disabled: false
+#springdoc:
+  oauthFlow:
+    authorizationUrl: http://localhost:8080/auth/realms/default/protocol/openid-connect/auth
+    tokenUrl: http://localhost:8080/auth/realms/default/protocol/openid-connect/token
 multitenancy:
   tenants:
     - identifier: dukes
@@ -58,16 +89,25 @@ multitenancy:
       schema: DUKES
       client-id: edge-service
       client-secret: rocking-secret
-      issuer: http://localhost:8080/realms/dukes
+      issuer: http://dukes.rock:8080/auth/realms/dukes
+      # issuer: http://localhost:8080/auth/realms/dukes
     - identifier: beans
       enabled: true
       schema: BEANS
       client-id: edge-service
       client-secret: rocking-secret
-      issuer: http://localhost:8080/realms/beans
+#      issuer: http://beans.rock:8080/auth/realms/beans
+      # issuer: http://beans.rock/auth/realms/beans
+      issuer: http://localhost:8080/auth/realms/beans
     - identifier: trixie
       enabled: false
       schema: TRIXIE
       client-id: edge-service
       client-secret: rocking-secret
-      issuer: http://localhost:8080/realms/trixie
+      issuer: http://trixie.rock:8080/auth/realms/trixie
+    - identifier: default
+      enabled: true
+      schema: public
+      client-id: edge-service
+      client-secret: rocking-secret
+      issuer: http://localhost:8080/auth/realms/default

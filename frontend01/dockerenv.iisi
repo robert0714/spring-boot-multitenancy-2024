@@ -1,0 +1,2 @@
+MY_APP_BASE_LOGIN_URL=https://localhost:1443/api/esg/v1
+MY_APP_API_BASE_URL=https://10.100.198.101

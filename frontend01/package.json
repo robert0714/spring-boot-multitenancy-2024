@@ -1,0 +1,31 @@
+{
+  "name": "frontend01",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "container": "vite build --mode container"
+  },
+  "dependencies": {
+    "@vueuse/core": "^10.11.0",
+    "axios": "^1.7.7",
+    "pdfjs-dist": "^4.6.82",
+    "pinia": "^2.2.2",
+    "primevue": "^3.53.0",
+    "tesseract.js": "^5.1.1",
+    "vue": "^3.5.9",
+    "vue-pdf-embed": "^2.1.0",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "@vitejs/plugin-vue-jsx": "^4.0.1",
+    "sass": "^1.79.3",
+    "tailwindcss": "^3.4.13",
+    "vite": "^5.4.8",
+    "vite-plugin-vue-devtools": "^7.4.6"
+  }
+}

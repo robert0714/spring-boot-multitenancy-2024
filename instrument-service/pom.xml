@@ -17,6 +17,7 @@
 		<jib-maven-plugin.version>3.4.3</jib-maven-plugin.version>
         <native.maven.plugin.version>0.10.2</native.maven.plugin.version>
         <springdoc-openapi-starter-webmvc-ui.version>2.6.0</springdoc-openapi-starter-webmvc-ui.version>
+        <datafaker.version>2.3.1</datafaker.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -38,10 +39,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-cache</artifactId>
-		</dependency>
-        <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-cache</artifactId>
 		</dependency> 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -57,6 +54,10 @@
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-expression</artifactId> 
+		</dependency>
         <dependency>
 			<groupId>io.opentelemetry</groupId>
 			<artifactId>opentelemetry-exporter-otlp</artifactId> 
@@ -65,6 +66,12 @@
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-tracing-bridge-otel</artifactId> 
 		</dependency>
+		<dependency>
+            <groupId>io.opentelemetry.javaagent</groupId>
+            <artifactId>opentelemetry-javaagent</artifactId>
+            <version>1.33.4</version>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
 			<groupId>net.ttddyy.observation</groupId>
 			<artifactId>datasource-micrometer-spring-boot</artifactId>
@@ -85,13 +92,18 @@
 			<artifactId>postgresql</artifactId> 
             <scope>runtime</scope>
 		</dependency>
-        <dependency>
+		<dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- <dependency>
 			<groupId>com.github.loki4j</groupId>
 			<artifactId>loki-logback-appender</artifactId>
              <version>1.5.1</version>
             <scope>runtime</scope>
-		</dependency>
-        <dependency>
+		</dependency> -->
+       <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
@@ -102,8 +114,6 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc-openapi-starter-webmvc-ui.version}</version>
 		</dependency>
-
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -129,16 +139,27 @@
 		    <artifactId>junit-jupiter</artifactId> 
 		    <scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-indexer</artifactId>
+			<optional>true</optional>
+		</dependency>
         <dependency>
 		    <groupId>org.testcontainers</groupId>
 		    <artifactId>postgresql</artifactId> 
 		    <scope>test</scope>
 		</dependency>
 		<dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>test</scope>
-        </dependency>	 
+			<groupId>net.datafaker</groupId>
+			<artifactId>datafaker</artifactId>
+			<version>${datafaker.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>co.elastic.apm</groupId>
+			<artifactId>elastic-apm-agent</artifactId>
+			<version>1.51.0</version>
+		</dependency>		 
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName> 
@@ -146,13 +167,26 @@
 			<plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
                 <executions>
 	                <execution>
 	                    <goals>
 	                        <goal>repackage</goal>
-	                    </goals>
-	                </execution>
+	                    </goals>						
+	                </execution>										
 	            </executions>
+				<configuration>
+				    <layers>
+						<enabled>true</enabled>
+					</layers>
+				   	<image>
+						<name>${project.artifactId}:latest</name>
+							<env>
+							   <BP_JVM_VERSION>17.*</BP_JVM_VERSION>
+							</env>
+							<createdDate>${maven.build.timestamp}</createdDate>
+					</image>
+				</configuration>
             </plugin> 
 			<plugin>
 	            <groupId>org.apache.maven.plugins</groupId>
@@ -291,7 +325,39 @@
 				<artifactId>sonar-maven-plugin</artifactId>
 				<version>3.10.0.2594</version>
 			</plugin>
-		</plugins> 
+		</plugins>		
+		 <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.graalvm.buildtools</groupId>
+                    <artifactId>native-maven-plugin</artifactId>
+                    <version>${native.maven.plugin.version}</version>
+                    <configuration>
+                        <!-- Mockito is not supported -->
+                        <skipNativeTests>true</skipNativeTests>
+                    </configuration>
+                </plugin>
+                <!-- We can compile the application in AOT mode but not producing a native image -->
+                <!-- If we active this plugin  -->
+                <!-- and deactive all the pom native component -->
+                    <!-- <plugin>
+                         <groupId>org.springframework.boot</groupId>
+                         <artifactId>spring-boot-maven-plugin</artifactId>
+                         <configuration>
+                             <jvmArguments> -agentlib:native-image-agent=config-output-dir=target/native-image
+                             </jvmArguments>
+                         </configuration>
+						 <executions>
+							 <execution>
+								 <id>process-aot</id>
+								 <goals>
+									 <goal>process-aot</goal>
+								 </goals>
+							 </execution>
+						 </executions>
+                     </plugin>  -->
+            </plugins>
+        </pluginManagement>
 	</build>
 	 <dependencyManagement>
         <dependencies>
@@ -303,5 +369,31 @@
                 <scope>import</scope>
             </dependency> 
         </dependencies>
-    </dependencyManagement>
+    </dependencyManagement>	
+	<profiles>
+        <!-- The native profile is already defined by the parent POM. -->
+        <!-- To use this plugin, we need GraalVM (located under $GRAALVM_HOME) and -->
+        <!-- native-builder (located in the $PATH) -->
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>${native.maven.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

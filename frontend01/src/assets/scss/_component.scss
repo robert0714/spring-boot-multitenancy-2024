@@ -1,0 +1,24 @@
+/* 按鈕內icon與文字的間距 */
+.p-button {
+    .material-symbols-outlined + span {
+        margin-left: 0.5rem;
+    }
+}
+
+/* 調整input框內icon位置 */
+.p-icon-field {
+    .p-input-icon {
+        margin-top: -0.7rem;
+    }
+}
+
+/* footer */
+.footer-bg {
+    background-color: var(--primary-01);
+    border-top: 1px solid var(--outline);
+}
+
+/* 文字行距 */
+.line-height-0 {
+    line-height: 0;
+  }

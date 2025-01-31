@@ -1,0 +1,147 @@
+$base-font-size: 16px;
+$base-line-height: 160%;
+
+// 文字大小
+:root {
+  --h1-font-size: #{2 * $base-font-size};
+  --h2-font-size: #{1.5 * $base-font-size};
+  --h3-font-size: #{1.5 * $base-font-size};
+  --h4-font-size: #{1.25 * $base-font-size};
+  --h5-font-size: #{$base-font-size};
+  --h6-font-size: #{$base-font-size};
+
+  --content01-font-size: #{$base-font-size};
+  --content02-font-size: #{0.875 * $base-font-size};
+  --content03-font-size: #{0.875 * $base-font-size};
+  --content04-font-size: #{0.875 * $base-font-size};
+}
+
+// 文字字重
+:root{
+  --h1-font-weight: 700;
+  --h2-font-weight: 700;
+  --h3-font-weight: 700;
+  --h4-font-weight: 700;
+  --h5-font-weight: 700;
+  --h6-font-weight: 500;
+
+  --content01-font-weight: 400;
+  --content02-font-weight: 700;
+  --content03-font-weight: 500;
+  --content04-font-weight: 400;
+}
+
+// 文字
+:root {
+  font-family: "Noto Sans TC", sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-variation-settings: normal;
+  --font-family: "Noto Sans TC", sans-serif;
+  --font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  --text-color: var(--text-paragraph);
+  --text-color-secondary: var(--text-description);
+}
+
+/* 文字設定 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  line-height: $base-line-height;
+}
+
+h1 {
+  font-weight: var(--h1-font-weight);
+  font-size: var(--h1-font-size);
+}
+
+h2 {
+  font-weight: var(--h2-font-weight);
+  font-size: var(--h2-font-size);
+  color: var(--text-title);
+}
+
+h3 {
+  font-weight: var(--h3-font-weight);
+  font-size: var(--h3-font-size);
+  color: var(--text-title);
+}
+
+h4 {
+  font-weight: var(--h4-font-weight);
+  font-size: var(--h4-font-size);
+}
+
+h5 {
+  font-weight: var(--h5-font-weight);
+  font-size: var(--h5-font-size);
+}
+
+h6 {
+  font-weight: var(--h6-font-weight);
+  font-size: var(--h6-font-size);
+}
+
+p {
+  font-size: $base-font-size;
+}
+
+// @font-face {
+//   font-family: "Inter var";
+//   font-weight: 100 900;
+//   font-display: swap;
+//   font-style: normal;
+//   font-named-instance: "Regular";
+//   src: url("./fonts/Inter-roman.var.woff2?v=3.19") format("woff2");
+// }
+// @font-face {
+//   font-family: "Inter var";
+//   font-weight: 100 900;
+//   font-display: swap;
+//   font-style: italic;
+//   font-named-instance: "Italic";
+//   src: url("./fonts/Inter-italic.var.woff2?v=3.19") format("woff2");
+// }
+
+.text-title {
+  color: var(--text-title);
+}
+.text-paragraph {
+  color: var(--gray-scale-09);
+}
+.text-description {
+  color: var(--gray-scale-07);
+}
+.text-navbar {
+  color: var(--gray-scale-05);
+}
+.text-disabled {
+  color: var(text-disabled);
+}
+.text-content01{
+  color: var(--gray-scale-09);
+  font-weight: var(--content01-font-weight);
+  font-size: var(--content01-font-size);
+  line-height: $base-line-height;
+}
+.text-content02{
+  color: var(--gray-scale-09);
+  font-weight: var(--content02-font-weight);
+  font-size: var(--content02-font-size);
+  line-height: $base-line-height;
+}
+.text-content03{
+  color: var(--gray-scale-09);
+  font-weight: var(--content03-font-weight);
+  font-size: var(--content03-font-size);
+  line-height: $base-line-height;
+}
+.text-content04{
+  color: var(--gray-scale-09);
+  font-weight: var(--content04-font-weight);
+  font-size: var(--content04-font-size);
+  line-height: $base-line-height;
+}

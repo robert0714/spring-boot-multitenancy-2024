@@ -3,7 +3,6 @@ package com.thomasvitale.instrumentservice.instrument;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito; 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,12 +24,17 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.annotation.DirtiesContext; 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thomasvitale.instrumentservice.TestInstrumentServiceApplication;
 import com.thomasvitale.instrumentservice.multitenancy.security.TenantAuthenticationManagerResolver;
 
 import jakarta.servlet.http.HttpServletRequest;
+import net.datafaker.Faker;
 
 import java.time.Instant; 
 import java.util.List;
@@ -44,21 +49,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@DirtiesContext
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-		"spring.datasource.url=jdbc:h2:mem:multitenant;DATABASE_TO_LOWER=TRUE",
-		"spring.datasource.username=user",
-		"spring.datasource.password=pw",
-		"spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
-		"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+//		"spring.datasource.url=jdbc:h2:mem:multitenant;DATABASE_TO_LOWER=TRUE",
+//		"spring.datasource.username=user",
+//		"spring.datasource.password=pw",
+//		"spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
+//		"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+		"spring.websecurity.debug=true",
+		"logging.level.org.springframework.security=DEBUG",
 		"spring.jpa.show-sql=true",
 		"spring.jpa.properties.hibernate.format_sql=true",
 		"spring.sql.init.continue-on-error=false"})
-//@Import(TestInstrumentServiceApplication.class)
+@Import(TestInstrumentServiceApplication.class)
 public class InstrumentControllerTest {
 	private static final String JWT_TENANT_1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lkcC5leGFtcGxlLm9yZy90ZW5hbnQtMSIsImlhdCI6MTY2NDU4MjQwMCwiZXhwIjoyNTI0NjA4MDAwLCJzdWIiOiJlNDg5ZmZlNy0yMmQyLTQwZWYtYmRlMS1mZDA2OWFjOGFmMGIiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsidXNlciJdfSwibmFtZSI6ImFsaWNlIn0.byGgJ1neIoYYE0gID2gWOo-PQDfHy3wasJ3NoD7iyz4";
     private static final String JWT_TENANT_2 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lkcC5leGFtcGxlLm9yZy90ZW5hbnQtMiIsImlhdCI6MTY2NDU4MjQwMCwiZXhwIjoyNTI0NjA4MDAwLCJzdWIiOiI0YWViYzRkMS0yNDFjLTQ5MzQtYjBiNi1lNjFmMGI1NmRjNzciLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsidXNlciJdfSwibmFtZSI6ImJvYiJ9.wHknw6r-vFO6pzz8DrHhLnxc0X428qGXpq3vxl1ygus";
     private static final String JWT_UNKNOWN_TENANT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lkcC5leGFtcGxlLm9yZy91bmtub3duLXRlbmFudCIsImlhdCI6MTY2NDU4MjQwMCwiZXhwIjoyNTI0NjA4MDAwLCJzdWIiOiIxNjU4MzE3Yy0wZWFhLTQwZTYtYWY3YS0wNGJiN2NlMmU5ZDkiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsidXNlciJdfSwibmFtZSI6Imdob3N0In0.e_MudNxU98pc2a8cboGjbvebZBwMux7P7wKP1rTkr7M";
 
-    private static final String TENANT_NAME_HEADER="X-TenantId"; 
     @Autowired
     private MockMvc mvc;
     
@@ -68,6 +74,7 @@ public class InstrumentControllerTest {
     @MockBean
     private JwtDecoder jwtDecoder;
     
+    private Faker faker = new Faker();		  
     
 	@BeforeEach
 	protected void setUp() throws Exception {
@@ -163,14 +170,12 @@ public class InstrumentControllerTest {
 	}
 
 	@Test
-	@Disabled
 	void unknownTenant() throws Exception { 
 		sendRequest(JWT_UNKNOWN_TENANT,"").andExpect(status().isUnauthorized());
  
 	}
 	
 	@Test
-	@Disabled
 	void givenRequestIsAnonymous_whenGetGreet_thenUnauthorized() throws Exception {
 		mvc.perform(get("/instruments").with(SecurityMockMvcRequestPostProcessors.anonymous()))
 	      .andExpect(status().isUnauthorized());
@@ -178,7 +183,6 @@ public class InstrumentControllerTest {
 	
 
 	@Test
-	@Disabled
 	void noTenant() throws Exception {
 		sendRequest("","").andExpect(status().isUnauthorized());
 	}
@@ -211,11 +215,54 @@ public class InstrumentControllerTest {
 		public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
 			request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 			if(StringUtils.isNotEmpty(tenantId)) {
-				request.addHeader(TENANT_NAME_HEADER, tenantId);
+				request.addHeader("X-TENANT-ID", tenantId);
 			}			
 			return request;
 		}
 
 	}
 
+	@Test
+	public void testAddInstrument() throws Exception{
+         String token = null;	
+         String tenantId = null;
+         
+		 for (int i = 0; i < 10; ++i) {
+			 
+			 if((i % 2)==1) {
+				 token = JWT_TENANT_1;
+				 tenantId = "dukes";
+			 }else {
+				 token = JWT_TENANT_2;
+				 tenantId = "beans";
+			 }		 
+			 
+			 String instrumentUnique =  faker.unique().fetchFromYaml("music.instruments"); 
+			 ResultActions resultActions =  mvc.perform( MockMvcRequestBuilders
+				      .post("/instruments")
+				      .content(asJsonString( Instrument.builder()
+			                    .name(instrumentUnique)
+			                    .type("piano") 
+						      .build()))
+				      .contentType(MediaType.APPLICATION_JSON)
+				      .accept(MediaType.APPLICATION_JSON)
+				      .with(processHeaders(token,tenantId))
+				     )		          
+			      .andExpect(status().isOk())
+			      .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists()) 
+			      .andExpect(MockMvcResultMatchers.jsonPath("$.createdAt").exists()) 
+			      .andExpect(MockMvcResultMatchers.jsonPath("$.updatedAt").exists()) 
+			      .andExpect(MockMvcResultMatchers.jsonPath("$.createdBy").exists()) 
+			      .andExpect(MockMvcResultMatchers.jsonPath("$.updatedBy").exists())
+			      .andExpect(content().string(containsString(instrumentUnique)));
+	         resultActions.andDo(MockMvcResultHandlers.print());
+		 }         
+	}
+	protected static String asJsonString(final Object obj) {
+	    try {
+	        return new ObjectMapper().writeValueAsString(obj);
+	    } catch (Exception e) {
+	        throw new RuntimeException(e);
+	    }
+	}
 }

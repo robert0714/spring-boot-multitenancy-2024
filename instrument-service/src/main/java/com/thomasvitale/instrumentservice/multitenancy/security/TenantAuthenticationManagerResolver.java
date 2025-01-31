@@ -34,7 +34,12 @@ public class TenantAuthenticationManagerResolver implements AuthenticationManage
 
 	@Override
 	public AuthenticationManager resolve(HttpServletRequest request) {
-		var tenantId = TenantContextHolder.getRequiredTenantIdentifier();
+		//var tenantId = TenantContextHolder.getRequiredTenantIdentifier();
+		String tenantId = TenantContextHolder.getTenantIdentifier();
+		if (tenantId == null) {
+			tenantId = "default";//為了地端版本相容性
+		}
+		
 //		return authenticationManagers.computeIfAbsent(tenantId, this::buildAuthenticationManager);
 //		return authenticationManagers.computeIfAbsent(tenantId, this::buildJwtAuthenticationManager);
 		return authenticationManagers.computeIfAbsent(tenantId, this::buildOpaqueAuthenticationManager);

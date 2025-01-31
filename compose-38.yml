@@ -1,0 +1,395 @@
+services:
+  # Applications
+  mfa:
+    image: "mfa"
+    container_name: "mfa"
+    build:
+      context: mfa
+      dockerfile: Dockerfile
+    # restart: unless-stopped
+    extra_hosts:
+    - "beans.rocks:192.168.62.38"
+    - "dukes.rocks:192.168.62.38" 
+    environment:  
+      - TZ=Asia/Taipei 
+    network_mode: host
+  f01:
+    image: "f01"
+    container_name: "f01"
+    build:
+      context: frontend01
+      dockerfile: Dockerfile
+    # restart: unless-stopped
+    extra_hosts:
+    - "beans.rocks:192.168.62.38"
+    - "dukes.rocks:192.168.62.38" 
+    environment: 
+      - MY_APP_API_BASE_URL=http://192.168.62.38
+      - TZ=Asia/Taipei
+    volumes:
+      - ./frontend01/nginx.sit:/etc/nginx/nginx.conf:ro
+    network_mode: host
+  edge:
+    image: "edge"
+    container_name: "edge"
+    build:
+      context: edge-service
+      dockerfile: prod.maven.Dockerfile
+    # restart: unless-stopped
+    extra_hosts:
+    - "beans.rocks:192.168.62.38"
+    - "dukes.rocks:192.168.62.38" 
+    environment: 
+      - logging.level.root=INFO
+      - logging.level.org.springframework.cloud=DEBUG 
+      - TZ=Asia/Taipei
+      - server.port=8182
+      # - BPL_JVM_THREAD_COUNT=50
+      # - BPL_DEBUG_ENABLED=true
+      # - BPL_DEBUG_PORT=9083
+      # - JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.33.4.jar
+      # - OTEL_SERVICE_NAME=login-api
+      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+      # - OTEL_METRICS_EXPORTER=none
+    network_mode: host
+
+  login-api:
+    image: "login-api-multi-tenant"
+    container_name: "login-api"
+    build:
+      context: login-api
+      dockerfile: prod.maven.Dockerfile 
+    # restart: unless-stopped
+    extra_hosts:
+    - "beans.rocks:192.168.62.38"
+    - "dukes.rocks:192.168.62.38" 
+    environment: 
+      - multitenancy.tenants[0].identifier=dukes
+      - multitenancy.tenants[0].enabled=true
+      - multitenancy.tenants[0].schema=DUKES
+      - multitenancy.tenants[0].client-id=edge-service
+      - multitenancy.tenants[0].client-secret=rocking-secret 
+      - multitenancy.tenants[0].issuer=http://dukes.rocks/auth/realms/dukes
+      - multitenancy.tenants[1].identifier=beans
+      - multitenancy.tenants[1].enabled=true
+      - multitenancy.tenants[1].schema=BEANS
+      - multitenancy.tenants[1].client-id=edge-service
+      - multitenancy.tenants[1].client-secret=rocking-secret 
+      - multitenancy.tenants[1].issuer=http://beans.rocks/auth/realms/beans
+      - multitenancy.tenants[2].identifier=trixie
+      - multitenancy.tenants[2].enabled=false
+      - multitenancy.tenants[2].schema=TRIXIE
+      - multitenancy.tenants[2].client-id=edge-service
+      - multitenancy.tenants[2].client-secret=rocking-secret 
+      - multitenancy.tenants[2].issuer=https://trixie.rocks:8080/auth/realms/trixie
+      - multitenancy.tenants[3].identifier=default
+      - multitenancy.tenants[3].enabled=true
+      - multitenancy.tenants[3].schema=public
+      - multitenancy.tenants[3].client-id=edge-service
+      - multitenancy.tenants[3].client-secret=rocking-secret 
+      - multitenancy.tenants[3].issuer=http://192.168.62.38/auth/realms/default
+      - oauth2.server.tokenUrl=http://192.168.62.38/auth/realms/default/protocol/openid-connect/token
+      - oauth2.server.clientId=edge-service
+      - oauth2.server.clientSecret=rocking-secret
+      - logging.level.root=INFO
+      - logging.level.org.springframework.web=DEBUG 
+      - TZ=Asia/Taipei
+      - BPL_JVM_THREAD_COUNT=50
+      - BPL_DEBUG_ENABLED=true
+      - BPL_DEBUG_PORT=9083
+      #- JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.33.4.jar
+      #- OTEL_SERVICE_NAME=login-api
+      #- OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+      #- OTEL_METRICS_EXPORTER=none
+    network_mode: host   
+
+  instrument:
+    image: "instrument-service"
+    container_name: "instrument"
+    build:
+      context: instrument-service
+      dockerfile: prod.maven.Dockerfile 
+    # restart: unless-stopped
+    extra_hosts:
+    - "beans.rocks:192.168.62.38"
+    - "dukes.rocks:192.168.62.38"
+    depends_on:
+      - multitenant-db
+    environment:
+      # - server.port=8181
+      # - spring.datasource.url=jdbc:postgresql://multitenant-db:5432/multitenant
+      - spring.datasource.url=jdbc:postgresql://localhost:5432/multitenant
+      - spring.datasource.username=user
+      - spring.datasource.password=pw
+      - spring.main.lazy-initialization=false
+      #- lokiUri=http://loki:3100/loki/api/v1/push
+      #- management.otlp.tracing.endpoint=http://tempo:4318/v1/traces
+      - lokiUri=http://localhost:3100/loki/api/v1/push
+      - management.otlp.tracing.endpoint=http://localhost:4318/v1/traces
+      - multitenancy.tenants[0].identifier=dukes
+      - multitenancy.tenants[0].enabled=true
+      - multitenancy.tenants[0].schema=DUKES
+      - multitenancy.tenants[0].client-id=edge-service
+      - multitenancy.tenants[0].client-secret=rocking-secret 
+      - multitenancy.tenants[0].issuer=http://dukes.rocks/auth/realms/dukes
+      - multitenancy.tenants[1].identifier=beans
+      - multitenancy.tenants[1].enabled=true
+      - multitenancy.tenants[1].schema=BEANS
+      - multitenancy.tenants[1].client-id=edge-service
+      - multitenancy.tenants[1].client-secret=rocking-secret 
+      - multitenancy.tenants[1].issuer=http://beans.rocks/auth/realms/beans
+      - multitenancy.tenants[2].identifier=trixie
+      - multitenancy.tenants[2].enabled=false
+      - multitenancy.tenants[2].schema=TRIXIE
+      - multitenancy.tenants[2].client-id=edge-service
+      - multitenancy.tenants[2].client-secret=rocking-secret 
+      - multitenancy.tenants[2].issuer=https://trixie.rocks:8080/auth/realms/trixie
+      - multitenancy.tenants[3].identifier=default
+      - multitenancy.tenants[3].enabled=true
+      - multitenancy.tenants[3].schema=public
+      - multitenancy.tenants[3].client-id=edge-service
+      - multitenancy.tenants[3].client-secret=rocking-secret 
+      - multitenancy.tenants[3].issuer=http://192.168.62.38/auth/realms/default
+      - logging.level.root=INFO
+      - logging.level.org.springframework.web=DEBUG      
+      # - SPRINGDOC_O_AUTH_FLOW_AUTHORIZATION_URL=http://10.100.198.101/auth/realms/default/protocol/openid-connect/auth
+      # - SPRINGDOC_O_AUTH_FLOW_TOKEN_URL=http://10.100.198.101/auth/realms/default/protocol/openid-connect/
+      # - springdoc.oAuthFlow.authorizationUrl=http://10.100.198.101/auth/realms/default/protocol/openid-connect/auth
+      # - springdoc.oAuthFlow.tokenUrl=http://10.100.198.101/auth/realms/default/protocol/openid-connect/
+      # - SPRINGDOC_OAUTH_FLOW_AUTHORIZATION_URL=http://10.100.198.101/auth/realms/default/protocol/openid-connect/auth
+      # - SPRINGDOC_OAUTH_FLOW_TOKEN_URL=http://10.100.198.101/auth/realms/default/protocol/openid-connect/
+      - springdoc.oauthFlow.authorizationUrl=http://10.100.198.101/auth/realms/default/protocol/openid-connect/auth
+      - springdoc.oauthFlow.tokenUrl=http://10.100.198.101/auth/realms/default/protocol/openid-connect/
+      - TZ=Asia/Taipei
+      # - SERVER_PORT=8181
+      # - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+      - BP_JVM_TYPE=JDK
+      - BPL_JVM_THREAD_COUNT=50
+      - BPL_DEBUG_ENABLED=true      
+      - BPL_DEBUG_PORT=9181
+#     - JAVA_TOOL_OPTIONS=-javaagent:/app/BOOT-INF/lib/elastic-apm-agent-1.51.0.jar
+      - ELASTIC_APM_SERVICE_NAME=instrument-service
+      - ELASTIC_APM_TRACE_METHODS_DURATION_THRESHOLD=50ms
+      - ELASTIC_APM_APPLICATION_PACKAGES=com.thomasvitale.instrumentservice.*
+      - ELASTIC_APM_TRACE_METHODS=com.thomasvitale.instrumentservice.*
+      - ELASTIC_APM_STACK_TRACE_LIMIT=180
+      - ELASTIC_APM_TRACE_METHODS_DURATION_THRESHOLD=50ms
+      - OTEL_SERVICE_NAME=instrument-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+      - OTEL_METRICS_EXPORTER=none
+    network_mode: host   
+  # reference:
+  # https://github.com/ThomasVitale/cloud-native-spring-in-action/blob/fb268d7a29a74df003656d0f068c1556946328d1/Chapter13/13-end/polar-deployment/docker/docker-compose.yml#L46-#L58 
+  # https://github.com/ThomasVitale/cloud-native-spring-in-action/blob/fb268d7a29a74df003656d0f068c1556946328d1/Chapter13/13-end/order-service/src/main/resources/application.yml#L58-#L62
+  
+  multitenant-db:
+    image: "postgres:15.7"
+    container_name: "multitenant-db"
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${MULTITENANT_DB_USER}
+      - POSTGRES_PASSWORD=${MULTITENANT_DB_PASSWORD}
+      - POSTGRES_DB=${MULTITENANT_DB}
+      - TZ=Asia/Taipei
+    ports:
+      - "5432:5432"
+    volumes:
+      - multitenant-db-data:/var/lib/postgresql/data
+    networks:
+      - lab-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: keycloak
+    command: start-dev --import-realm --metrics-enabled=true
+    depends_on: 
+      - postgres
+    volumes:
+      - ./platform/keycloak:/opt/keycloak/data/import
+    environment:
+      - KEYCLOAK_ADMIN=user
+      - KEYCLOAK_ADMIN_PASSWORD=password
+      - KC_HOSTNAME_PATH=/auth
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false      
+      - KC_HTTP_ENABLED=true
+      - KC_HTTP_RELATIVE_PATH=auth
+      - KC_HTTP_PORT=8080
+      - TZ=Asia/Taipei
+      - KC_HTTPS_PORT=8443
+      - KC_CACHE_METRICS_HISTOGRAMS_ENABLED=true
+      - KC_HTTP_METRICS_HISTOGRAMS_ENABLED=true
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+      # If you want to use a proxyto https , set the following environment variables
+      #- KC_PROXY=edge
+    ports:
+      - 8080:8080
+      - 8443:8443
+    networks:
+      - lab-network  
+
+  # Data
+
+  chroma:
+    image: ghcr.io/chroma-core/chroma:0.4.24
+    container_name: chroma
+    depends_on:
+      - alloy
+    ports:
+      - 8000:8000
+    environment:
+      - CHROMA_OTEL_COLLECTION_ENDPOINT=http://grafana-agent:4317
+      - CHROMA_OTEL_SERVICE_NAME=chroma
+      - CHROMA_OTEL_GRANULARITY=all
+      - ANONYMIZED_TELEMETRY=False
+      - TZ=Asia/Taipei
+    networks:
+      - lab-network
+      
+  postgres:
+    image: docker.io/library/postgres:16.2
+    container_name: postgres
+    # depends_on:
+    #   - alloy
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=grafana
+      - TZ=Asia/Taipei
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - lab-network
+
+  # Observability
+
+  grafana:
+    image: docker.io/grafana/grafana-oss:10.4.6
+    container_name: grafana
+    depends_on:
+      - loki
+      - prometheus
+      - tempo
+    ports:
+      - "3000:3000"
+    hostname: ${HOST_NAME:-localhost}
+    user: root
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_DATABASE_USER=user
+      - GF_DATABASE_PASSWORD=password
+      - GF_SECURITY_ADMIN_USER=user
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      - TZ=Asia/Taipei
+    volumes:
+      - ./platform/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./platform/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./platform/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - lab-network
+
+  loki:
+    image: docker.io/grafana/loki:2.9.9
+    container_name: loki
+    command: -config.file=/etc/config/loki.yml
+    user: root
+    ports:
+      - "3100:3100"
+    hostname: ${HOST_NAME:-localhost}
+    volumes:
+      - ./platform/loki/loki.yml:/etc/config/loki.yml
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Taipei
+    networks:
+      - lab-network
+
+  prometheus:
+    image: quay.io/prometheus/prometheus:v2.53.1
+    container_name: prometheus
+    user: root
+    command:
+      - "--config.file=/etc/config/prometheus.yml"
+      - "--enable-feature=otlp-write-receiver"
+      - "--enable-feature=exemplar-storage"
+      - "--web.enable-remote-write-receiver"
+    ports:
+      - "9090:9090"
+    hostname: ${HOST_NAME:-localhost}
+    volumes:
+      # - ./platform/prometheus/prometheus.yml:/etc/config/prometheus.yml
+      - ./platform/prometheus/prometheus-38.yml:/etc/config/prometheus.yml
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Taipei
+    networks:
+      - lab-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  
+
+  tempo:
+    image: docker.io/grafana/tempo:2.4.2
+    container_name: tempo
+    command: -config.file /etc/tempo-config.yml
+    ports:
+      - "3110"     # Tempo
+      - "4317"     # OTLP gRPC
+      - "4318"     # OTLP HTTP
+      - "9411:9411"     # Zipkin
+    hostname: ${HOST_NAME:-localhost}
+    volumes:
+      - ./platform/tempo/tempo.yml:/etc/tempo-config.yml
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Taipei
+    networks:
+      - lab-network  
+
+  alloy:
+    image: docker.io/grafana/alloy:v1.2.1
+    container_name: alloy
+    command:
+      - "run"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "--storage.path=/data-alloy"
+      - "--disable-reporting"
+      - "/etc/alloy/config.alloy"
+    depends_on:
+      - loki
+      - prometheus
+      - tempo
+    hostname: ${HOST_NAME:-localhost}
+    environment:
+      - ENVIRONMENT=dev
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+      - PROMETHEUS_URL=http://prometheus:9090/api/v1/write
+      - TEMPO_URL=http://tempo:4317
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - TZ=Asia/Taipei
+    ports:
+      - "12345:12345"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./platform/alloy/config.alloy:/etc/alloy/config.alloy
+      - /var/run/docker.sock:/var/run/docker.sock
+      - alloy-data:/data-alloy
+    restart: unless-stopped
+    networks:
+      - lab-network
+
+volumes:
+  alloy-data: { }
+  grafana-data: { }
+  postgres-data: { }
+  multitenant-db-data: { }
+
+networks:
+  lab-network:
+    name: my-lab-network

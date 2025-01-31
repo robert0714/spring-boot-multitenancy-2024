@@ -1,0 +1,18 @@
+/* public/theme.css */
+:root {
+    --primary-color: #000000;
+    --secondary-color: #FFFFFF;
+  }
+  
+  /* tenant1 theme */
+  :root.tenant1 {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+  }
+  
+  /* tenant2 theme */
+  :root.tenant2 {
+    --primary-color: #e74c3c;
+    --secondary-color: #8e44ad;
+  }
+  

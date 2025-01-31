@@ -1,0 +1,6 @@
+spring.datasource.url=jdbc:postgresql://localhost:5432/multitenant
+spring.datasource.username=user
+spring.datasource.password=pw
+spring.main.lazy-initialization=
+lokiUri=http://localhost:3100/loki/api/v1/push
+management.otlp.tracing.endpoint=http://localhost:4318/v1/traces

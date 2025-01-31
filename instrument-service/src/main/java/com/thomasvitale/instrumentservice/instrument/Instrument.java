@@ -1,13 +1,34 @@
 package com.thomasvitale.instrumentservice.instrument;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotEmpty;
-
+import lombok.*;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Builder
+@EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
 @Entity
 public class Instrument {
   
@@ -20,40 +41,33 @@ public class Instrument {
 
 	private String type;
 
-	public Instrument() {}
+	@Column(name = "created_at", nullable = false, updatable = false)
+	@CreatedDate
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+	private OffsetDateTime createdAt;
 
-	public Instrument(String name, String type) {
-		this.name = name;
-		this.type = type;
-	}
+	/**
+	 * Edit date/time
+	 */	
+	@Column(name = "updated_at", nullable = false)
+	@LastModifiedDate
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+	private OffsetDateTime updatedAt;
 
-	public Instrument(UUID id, String name, String type) {
-		this.name = name;
-		this.type = type;
-	}
+	/**
+	 * Creator Account
+	 */
+	
+	@Column(name = "created_by", nullable = false, updatable = false)
+	@CreatedBy
+	private String createdBy;
 
-	public UUID getId() {
-		return id;
-	}
-
-  	public void setId(UUID id) {
-		this.id = id;
-	}
-
-  	public String getName() {
-    	return name;
-  	}
-
-  	public void setName(String name) {
-    	this.name = name;
-  	}
-
-  	public String getType() {
-    	return type;
-  	}
-
-  	public void setType(String type) {
-    	this.type = type;
-  	}
+	/**
+	 * Editor account
+	 */
+	
+	@Column(name = "updated_by", nullable = false)
+	@LastModifiedBy
+	private String updatedBy;
 
 }

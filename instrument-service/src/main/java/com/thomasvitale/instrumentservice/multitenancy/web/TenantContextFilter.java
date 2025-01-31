@@ -7,10 +7,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import com.thomasvitale.instrumentservice.multitenancy.context.TenantContextHolder;
 import com.thomasvitale.instrumentservice.multitenancy.context.resolvers.HttpHeaderTenantResolver;
-import com.thomasvitale.instrumentservice.multitenancy.exceptions.TenantResolutionException;
+//import com.thomasvitale.instrumentservice.multitenancy.exceptions.TenantResolutionException;
+import com.thomasvitale.instrumentservice.multitenancy.security.JWTInfoHelper;
 import com.thomasvitale.instrumentservice.multitenancy.tenantdetails.TenantDetailsService;
 
 import io.micrometer.common.KeyValue;
@@ -25,12 +27,15 @@ import org.springframework.web.filter.ServerHttpObservationFilter;
  * Establish a tenant context from an HTTP request, if tenant information is available.
  */
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class TenantContextFilter extends OncePerRequestFilter {
 
+	
 	private final HttpHeaderTenantResolver httpRequestTenantResolver;
     private final TenantDetailsService tenantDetailsService;
-
+    private final JWTInfoHelper jwtInfoHelper ;
+	 
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -41,7 +46,12 @@ public class TenantContextFilter extends OncePerRequestFilter {
             configureLogs(tenantIdentifier);
             configureTraces(tenantIdentifier, request);
         } else {
-            throw new TenantResolutionException("A valid tenant must be specified for requests to %s".formatted(request.getRequestURI()));
+        	String realmName = jwtInfoHelper.showRealmName();
+        	String userName = jwtInfoHelper.showUserName();
+        	log.info("jwt realm: %s".formatted(realmName));      
+        	log.info("jwt userinfo: %s".formatted(userName));      
+        	log.info("A valid tenant must be specified for requests to %s".formatted(request.getRequestURI()));        	
+           // throw new TenantResolutionException("A valid tenant must be specified for requests to %s".formatted(request.getRequestURI()));
         }
 
         try {
@@ -53,8 +63,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-    	String uri = request.getRequestURI();    	
-        return org.apache.commons.lang3.StringUtils.startsWithAny(uri, "/actuator","/swagger-ui","/v3/api-docs");
+        return request.getRequestURI().startsWith("/actuator");
     }
 
     private boolean isTenantValid(String tenantIdentifier) {
