@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.ComponentScan.Filter;
- 
+
 import com.thomasvitale.multitenant.app.advanced.InstrumentServiceApplication;
 import com.thomasvitale.multitenant.config.InstrumentTestConfig;
 import com.thomasvitale.multitenant.config.InstrumentTestDataConfig;

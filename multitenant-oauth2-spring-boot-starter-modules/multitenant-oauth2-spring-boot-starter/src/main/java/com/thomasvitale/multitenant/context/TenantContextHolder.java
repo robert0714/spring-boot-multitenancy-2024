@@ -16,7 +16,8 @@ public final class TenantContextHolder {
 
     private static final Logger log = LoggerFactory.getLogger(TenantContextHolder.class);
 
-    private static final ThreadLocal<String> tenantIdentifier = new ThreadLocal<>();
+    private static final InheritableThreadLocal<String> tenantIdentifier = new InheritableThreadLocal<>();
+    
 
     private TenantContextHolder() {
     }

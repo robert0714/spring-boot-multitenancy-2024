@@ -20,16 +20,17 @@ public class ConnectionProvider implements MultiTenantConnectionProvider<String>
 	private final DataSource dataSource;
     private final TenantDetailsService tenantDetailsService;
     private final Map<String,String> cache;
+    private final String defaultSchema;
 
     public ConnectionProvider(DataSource dataSource, TenantDetailsService tenantDetailsService) {
 		this.dataSource = dataSource;
         this.tenantDetailsService = tenantDetailsService;
         this.cache = new HashMap<>();
+        this.defaultSchema = tenantDetailsService.getDefaultSchema().orElse("public") ;	
     }
 
 	@Override
-	public Connection getAnyConnection() throws SQLException {
-		String  defaultSchema = tenantDetailsService.getDefaultSchema().orElse("public") ;			
+	public Connection getAnyConnection() throws SQLException { 		
 		return getConnection(defaultSchema);
 	}
 
@@ -51,9 +52,15 @@ public class ConnectionProvider implements MultiTenantConnectionProvider<String>
 		case "PostgreSQL":
 			connection.setSchema(schema);
 			break;
+		case "H2":
+			connection.setSchema(schema);
+			break;
 		case "MySQL":
 			connection.createStatement().execute("USE %s".formatted(schema));
 			break;
+		case "MariaDB":
+			connection.createStatement().execute("USE %s".formatted(schema));
+			break;				
 		default:
 			throw new UnsupportedOperationException("Unimplemented method 'getConnection'.");
 		}
@@ -67,17 +74,22 @@ public class ConnectionProvider implements MultiTenantConnectionProvider<String>
 		return dpn;
 	}
 	@Override
-	public void releaseConnection(String tenantIdentifier, Connection connection) throws SQLException {
-		var tenantDetails = tenantDetailsService.loadTenantByIdentifier("default");
+	public void releaseConnection(String tenantIdentifier, Connection connection) throws SQLException { 
 		final String dpn = this.cache.get("dpn");	
 		
 		switch (dpn) {
 		case "PostgreSQL":
-			connection.setSchema(tenantDetails.schema()); 
+			connection.setSchema(defaultSchema); 
+			break;
+		case "H2":
+			connection.setSchema(defaultSchema); 
 			break;
 		case "MySQL": 
-			 connection.createStatement().execute("USE %s".formatted(tenantDetails.schema()));			 
+			 connection.createStatement().execute("USE %s".formatted(defaultSchema));			 
 			break;
+		case "MariaDB":
+			 connection.createStatement().execute("USE %s".formatted(defaultSchema));			 
+			break;	
 		default:
 			throw new UnsupportedOperationException("Unimplemented method 'releaseConnection'.");
 		}

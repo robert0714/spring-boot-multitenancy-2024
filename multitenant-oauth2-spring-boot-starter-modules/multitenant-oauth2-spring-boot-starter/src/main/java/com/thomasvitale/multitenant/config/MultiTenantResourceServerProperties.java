@@ -41,7 +41,7 @@ public class MultiTenantResourceServerProperties {
 
     public static class Header {
 
-        public static final String DEFAULT_HEADER_NAME = "X-Tenant-Id";
+        public static final String DEFAULT_HEADER_NAME = "x-tenant-id";
 
         /**
          * Name of the HTTP header which is used for resolving the tenant.
@@ -50,6 +50,17 @@ public class MultiTenantResourceServerProperties {
          */
         private String headerName = DEFAULT_HEADER_NAME;
 
+        
+        private boolean enabled = DEFAULT_ENABLED;
+        
+        public boolean isEnabled() {
+            return this.enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+        
         public String getHeaderName() {
             return headerName;
         }

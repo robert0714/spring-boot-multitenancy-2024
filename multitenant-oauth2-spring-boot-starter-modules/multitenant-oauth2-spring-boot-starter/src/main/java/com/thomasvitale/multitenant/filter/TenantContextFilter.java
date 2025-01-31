@@ -43,9 +43,9 @@ public class TenantContextFilter extends OncePerRequestFilter {
         } else {
         	String realmName = jwtInfoHelper.showRealmName();
         	String userName = jwtInfoHelper.showUserName();
-        	log.info("jwt realm: %s".formatted(realmName));      
-        	log.info("jwt userinfo: %s".formatted(userName));      
-        	log.info("A valid tenant must be specified for requests to %s".formatted(request.getRequestURI()));        	
+        	log.debug("jwt realm: %s".formatted(realmName));      
+        	log.debug("jwt userinfo: %s".formatted(userName));      
+        	log.debug("A valid tenant must be specified for requests to %s".formatted(request.getRequestURI()));        	
            // throw new TenantResolutionException("A valid tenant must be specified for requests to %s".formatted(request.getRequestURI()));
         }
 
@@ -58,7 +58,9 @@ public class TenantContextFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().startsWith("/actuator");
+        boolean result = request.getRequestURI().contains("/actuator")
+				|| request.getRequestURI().contains("/swagger-ui");
+		return result;
     }
 
     private boolean isTenantValid(String tenantIdentifier) {

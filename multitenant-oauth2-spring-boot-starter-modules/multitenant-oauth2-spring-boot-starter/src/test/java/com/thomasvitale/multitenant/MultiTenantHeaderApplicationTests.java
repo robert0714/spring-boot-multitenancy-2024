@@ -6,15 +6,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.annotation.Autowired; 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.ApplicationContext; 
-import org.springframework.context.annotation.Import; 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.ComponentScans;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.filter.OncePerRequestFilter; 
 
@@ -24,10 +31,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
- 
+
 import com.nimbusds.jwt.proc.JWTClaimsSetAwareJWSKeySelector;
-import com.nimbusds.jwt.proc.JWTProcessor; 
+import com.nimbusds.jwt.proc.JWTProcessor;
+import com.thomasvitale.multitenant.app.advanced.InstrumentServiceApplication;
 import com.thomasvitale.multitenant.app.basic.TestApplication;
+import com.thomasvitale.multitenant.config.InstrumentTestConfig;
+import com.thomasvitale.multitenant.config.InstrumentTestDataConfig;
 import com.thomasvitale.multitenant.config.MultiTenantHeaderTestConfiguration;
 import com.thomasvitale.multitenant.tenantdetails.TenantDetails;
 import com.thomasvitale.multitenant.tenantdetails.TenantDetailsService; 
@@ -51,7 +61,7 @@ public class MultiTenantHeaderApplicationTests {
     @Autowired
     private ApplicationContext context;
 
-    @MockBean
+    @MockitoBean
     private TenantDetailsService tenantService;
     
     @Test

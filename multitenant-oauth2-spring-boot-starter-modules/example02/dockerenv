@@ -1,0 +1,2 @@
+ALLOWED_ORIGINS=*.iisigroup,http://*.esg,*.ocarbon.net,http://192.168.62.37,http://localhost:8080,http://localhost:3000,http://localhost:4000
+logging.level.com.iisigroup.login=DEBUG

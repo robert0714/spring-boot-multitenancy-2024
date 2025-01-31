@@ -18,6 +18,7 @@
 	</properties>
 	<modules>
         <module>multitenant-oauth2-spring-boot-starter</module>
-        <module>sample01</module>
+        <module>example01</module>
+		<module>example02</module> 
     </modules>
 </project>

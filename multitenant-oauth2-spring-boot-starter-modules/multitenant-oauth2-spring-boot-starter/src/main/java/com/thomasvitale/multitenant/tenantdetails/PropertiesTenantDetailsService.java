@@ -1,6 +1,7 @@
 package com.thomasvitale.multitenant.tenantdetails;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
  
  
@@ -23,9 +24,10 @@ public class PropertiesTenantDetailsService implements TenantDetailsService {
     }
 
 	public Optional<? extends TenantDetails> getById(String identifier) {
+		
         return tenantDetailsProperties.getTenants().stream()
                 .filter(TenantDetails::enabled)
-                .filter(tenantDetails -> identifier.equals(tenantDetails.identifier()))
+				.filter(tenantDetails -> Objects.equals(tenantDetails.identifier(), identifier))
                 .findFirst() ;
     }
 

@@ -9,14 +9,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories; 
 import org.testcontainers.junit.jupiter.Testcontainers;
- 
+
+import com.thomasvitale.multitenant.app.instrumentservice.Instrument;
+import com.thomasvitale.multitenant.app.instrumentservice.InstrumentRepository;
 import com.thomasvitale.multitenant.app.instrumentservice.flyway.TenantFlywayMigrationInitializer;
 import com.thomasvitale.multitenant.tenantdetails.TenantDetailsService; 
  
 
 @Configuration(proxyBeanMethods = false)
-@EnableJpaRepositories(basePackages = "com.thomasvitale.multitenant.app.instrumentservice" ,enableDefaultTransactions = true)
-@EntityScan(basePackages = "com.thomasvitale.multitenant.app.instrumentservice")
+@EnableJpaRepositories(basePackageClasses =  InstrumentRepository.class  ,enableDefaultTransactions = true)
+@EntityScan(basePackageClasses = Instrument.class)
 @Testcontainers
 public class InstrumentTestConfig {
 
@@ -32,10 +34,7 @@ public class InstrumentTestConfig {
 	@Bean
 	public TenantFlywayMigrationInitializer tenantFlywayMigration(final DataSource dataSource,
 			final Flyway defaultFlyway,final TenantDetailsService tenantDetailsService) {
-		
 		return new TenantFlywayMigrationInitializer(dataSource , defaultFlyway , tenantDetailsService);
-	}
-
-	
+	} 
 	
 }

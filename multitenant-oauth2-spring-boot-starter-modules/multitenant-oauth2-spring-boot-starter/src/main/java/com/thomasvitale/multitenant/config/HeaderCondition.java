@@ -12,7 +12,7 @@ public class HeaderCondition extends AllNestedConditions {
         super(ConfigurationPhase.REGISTER_BEAN);
     }
 
-    @ConditionalOnProperty(prefix = "spring.security.oauth2.resourceserver.multitenant", name = "enabled",
+    @ConditionalOnProperty(prefix = "spring.security.oauth2.resourceserver.multitenant.header", name = "enabled",
             havingValue = "true")
     static class OnEnabled { }
 
